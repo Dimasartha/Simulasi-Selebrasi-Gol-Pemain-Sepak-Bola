@@ -1,0 +1,35 @@
+RAYLIB_PATH = C:/raylib/raylib
+
+CC     = gcc
+CFLAGS = -Wall -O2 -I. -I$(RAYLIB_PATH)/src -DPLATFORM_DESKTOP
+LIBS   = -L$(RAYLIB_PATH)/lib -lraylib -lopengl32 -lgdi32 -lwinmm -lm
+
+TARGET = animasi_selebrasi.exe
+
+SRCS = main.c \
+       coords.c \
+       src/algo/dda.c \
+       src/algo/bresenham.c \
+       src/algo/midcircle.c \
+       src/ui/primitives.c \
+       src/ui/back_button.c \
+       src/ui/replay_button.c \
+       src/ui/cartesian.c \
+       src/screens/kneeslide.c \
+       src/screens/lompat.c \
+       src/screens/takel.c \
+       src/screens/menu_animasi.c \
+       src/screens/pola2d.c \
+       src/screens/about.c \
+       src/screens/menu.c
+
+all: $(TARGET)
+
+$(TARGET): $(SRCS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS) $(LIBS)
+
+clean:
+	rm -f $(TARGET)
+
+run: all
+	./$(TARGET)
