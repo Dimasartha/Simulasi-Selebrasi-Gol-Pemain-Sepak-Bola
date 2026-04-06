@@ -21,6 +21,8 @@ static float pX = 150, pY = 550;
 static float speedX = 6.0f, speedY = 0.0f;
 static int state = 0; 
 static float animT = 0;
+static float timeScale = 1.0f;
+static bool modeRangka = false;
 
 // FUNGSI BANTU (HELPER)
 static void GetLimb(float sx, float sy, float len, float angleDeg, float *ox, float *oy) {
@@ -60,9 +62,9 @@ void UpdateDrawLompatScreen(Screen *currentScreen) {
     }
 
     // LOGIKA UPDATE
-    animT += 0.3f; 
-    pX += speedX;
-    pY += speedY;
+    animT += (0.3f * timeScale); 
+    pX += (speedX * timeScale);
+    pY += (speedY * timeScale);
 
     if (state == 0) {
         if (pX > 450) {
@@ -140,34 +142,48 @@ void UpdateDrawLompatScreen(Screen *currentScreen) {
     if (shadowWidth < 5) shadowWidth = 5;
 
     Color shadowColor = (Color){20, 50, 25, 120}; // Hijau sangat gelap & transparan
-    Bres_ThickLine(pX - shadowWidth, 570, pX + shadowWidth, 570, 8, shadowColor);
+    Bres_ThickLine(pX - shadowWidth, 570, pX + shadowWidth, 570, 8, shadowColor); 
+    
+    if (!modeRangka) {
+        // Tubuh Kiri (Belakang)
+        Bres_ThickLine(nx, ny, wxL, wyL, 10, shirtB); 
+        Bres_ThickLine(wxL, wyL, hxL, hyL, 8, skin); 
+        Bres_ThickLine(pX, pY, kxL, kyL, 16, shorts); 
+        Bres_ThickLine(kxL, kyL, axL, ayL, 12, skin); 
+        Bres_ThickLine(axL-(axL-kxL)*0.5f, ayL-(ayL-kyL)*0.5f, axL, ayL, 14, socks); 
 
-    // Tubuh Kiri (Belakang)
-    Bres_ThickLine(nx, ny, wxL, wyL, 10, shirtB); 
-    Bres_ThickLine(wxL, wyL, hxL, hyL, 8, skin); 
-    Bres_ThickLine(pX, pY, kxL, kyL, 16, shorts); 
-    Bres_ThickLine(kxL, kyL, axL, ayL, 12, skin); 
-    Bres_ThickLine(axL-(axL-kxL)*0.5f, ayL-(ayL-kyL)*0.5f, axL, ayL, 14, socks); 
+        // Badan & Nomor Punggung
+        Bres_ThickLine(pX - 8, pY, nx - 8, ny, 10, shirtB); 
+        Bres_ThickLine(pX, pY, nx, ny, 12, shirtW);         
+        Bres_ThickLine(pX + 8, pY, nx + 8, ny, 10, shirtB); 
+        float midX = (pX + nx)/2.0f, midY = (pY + ny)/2.0f;
+        Bres_ThickLine(midX - 3, midY - 10, midX + 5, midY - 10, 3, BLACK); 
+        Bres_ThickLine(midX + 5, midY - 10, midX - 1, midY + 8, 3, BLACK);  
 
-    // Badan & Nomor Punggung
-    Bres_ThickLine(pX - 8, pY, nx - 8, ny, 10, shirtB); 
-    Bres_ThickLine(pX, pY, nx, ny, 12, shirtW);         
-    Bres_ThickLine(pX + 8, pY, nx + 8, ny, 10, shirtB); 
-    float midX = (pX + nx)/2.0f, midY = (pY + ny)/2.0f;
-    Bres_ThickLine(midX - 3, midY - 10, midX + 5, midY - 10, 3, BLACK); 
-    Bres_ThickLine(midX + 5, midY - 10, midX - 1, midY + 8, 3, BLACK);  
+        // Kepala
+        MidcircleFilled(nx, ny - 10, 14, skin);
+        MidcircleFilled(nx + 1, ny - 13, 15, hair); 
 
-    // Kepala
-    MidcircleFilled(nx, ny - 10, 14, skin);
-    MidcircleFilled(nx + 1, ny - 13, 15, hair); 
-
-    // Tubuh Kanan (Depan)
-    Bres_ThickLine(pX, pY, kxR, kyR, 16, shorts); 
-    Bres_ThickLine(kxR, kyR, axR, ayR, 12, skin); 
-    Bres_ThickLine(axR-(axR-kxR)*0.5f, ayR-(ayR-kyR)*0.5f, axR, ayR, 14, socks); 
-    Bres_ThickLine(nx, ny, wxR, wyR, 10, shirtW); 
-    Bres_ThickLine(wxR, wyR, hxR, hyR, 8, skin); 
-
+        // Tubuh Kanan (Depan)
+        Bres_ThickLine(pX, pY, kxR, kyR, 16, shorts); 
+        Bres_ThickLine(kxR, kyR, axR, ayR, 12, skin); 
+        Bres_ThickLine(axR-(axR-kxR)*0.5f, ayR-(ayR-kyR)*0.5f, axR, ayR, 14, socks); 
+        Bres_ThickLine(nx, ny, wxR, wyR, 10, shirtW); 
+        Bres_ThickLine(wxR, wyR, hxR, hyR, 8, skin);
+    } else {
+        Color bone = LIGHTGRAY;
+        BresenhamLine(nx, ny, wxL, wyL, bone);  BresenhamLine(wxL, wyL, hxL, hyL, bone);
+        BresenhamLine(pX, pY, kxL, kyL, bone);  BresenhamLine(kxL, kyL, axL, ayL, bone);
+        BresenhamLine(pX, pY, nx, ny, bone);
+        BresenhamLine(pX, pY, kxR, kyR, bone);  BresenhamLine(kxR, kyR, axR, ayR, bone);
+        BresenhamLine(nx, ny, wxR, wyR, bone);  BresenhamLine(wxR, wyR, hxR, hyR, bone);
+        
+        MidcircleFilled(pX, pY, 5, YELLOW);
+        MidcircleFilled(nx, ny, 4, RED);
+        MidcircleFilled(kxL, kyL, 4, RED);  MidcircleFilled(axL, ayL, 4, RED);
+        MidcircleFilled(kxR, kyR, 4, RED);  MidcircleFilled(axR, ayR, 4, RED);
+    }
+    
     // Partikel (Efek Debu)
     for (int i = 0; i < MAX_PARTICLES; i++) {
         if (particles[i].life > 0) {
@@ -189,7 +205,64 @@ void UpdateDrawLompatScreen(Screen *currentScreen) {
     DrawText("ANIMASI: CRISTIANO RONALDO (Lompatan Vertikal)", 300, 15, 20, WHITE);
     if (state == 1 || state == 2) DrawText("Fase: LOMPATAN GRAVITASI", 300, 45, 18, ORANGE);
     else if (state == 3) DrawText("Fase: MENDARAT (SIUUU!)", 300, 45, 18, GREEN);
-
+    
+    Rectangle btn05 = { 20, 100, 50, 30};
+    Rectangle btn10 = { 80, 100, 50, 30};
+    Rectangle btn20 = { 140, 100, 50, 30};
+    Vector2 mouse = GetMousePosition();
+    
+    if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (CheckCollisionPointRec(mouse, btn05)) timeScale = 0.5f;
+        if (CheckCollisionPointRec(mouse, btn10)) timeScale = 1.0f;
+        if (CheckCollisionPointRec(mouse, btn20)) timeScale = 2.0f;
+    }
+    
+    DrawRectangleRec(btn05, timeScale == 0.5f ? GREEN : DARKGRAY);
+    DrawRectangleRec(btn10, timeScale == 1.0f ? GREEN : DARKGRAY);
+    DrawRectangleRec(btn20, timeScale == 2.0f ? GREEN : DARKGRAY);
+    
+    DrawText("0.5x", btn05.x + 10, btn05.y + 8, 16, WHITE);
+    DrawText("1.0x", btn10.x + 10, btn10.y + 8, 16, WHITE);
+    DrawText("2.0x", btn20.x + 10, btn20.y + 8, 16, WHITE);
+    
+    Rectangle btnRangka = { 20, 140, 170, 30 };
+    if (CheckCollisionPointRec(mouse, btnRangka) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        modeRangka = !modeRangka;
+    }
+    
+    DrawRectangleRec(btnRangka, modeRangka ? RED : DARKGRAY);
+    DrawText("Mode Rangka", btnRangka.x + 10, btnRangka.y + 8, 14, WHITE);
+    
+    Rectangle btnTest = { 200, 140, 1000, 30 };
+    DrawRectangleRec(btnTest, LIGHTGRAY);
+    
+    Rectangle polban1 = { 450, 80, 100, 50};
+    DrawRectangleRec(polban1, WHITE);
+    DDA_ThickLine(polban1.x + 50, polban1.y+5, polban1.x + 10, polban1.y + 20, 5, ORANGE);
+    DDA_ThickLine(polban1.x + 65, polban1.y+10, polban1.x + 10, polban1.y + 25, 5, ORANGE);
+    DDA_ThickLine(polban1.x + 80, polban1.y+22, polban1.x + 10, polban1.y + 30, 5, ORANGE);
+    DDA_ThickLine(polban1.x + 10, polban1.y+30, polban1.x + 50, polban1.y + 40, 5, BLUE);
+    DDA_ThickLine(polban1.x + 50, polban1.y+40, polban1.x + 80, polban1.y + 30, 5, BLUE);
+    DDA_ThickLine(polban1.x + 80, polban1.y+30, polban1.x + 80, polban1.y + 25, 5, BLUE);
+    
+    Rectangle polban2 = { 550, 80, 100, 50};
+    DrawRectangleRec(polban2, WHITE);
+    DDA_ThickLine(polban2.x + 50, polban2.y+5, polban2.x + 10, polban2.y + 20, 5, ORANGE);
+    DDA_ThickLine(polban2.x + 65, polban2.y+10, polban2.x + 10, polban2.y + 25, 5, ORANGE);
+    DDA_ThickLine(polban2.x + 80, polban2.y+22, polban2.x + 10, polban2.y + 30, 5, ORANGE);
+    DDA_ThickLine(polban2.x + 10, polban2.y+30, polban2.x + 50, polban2.y + 40, 5, BLUE);
+    DDA_ThickLine(polban2.x + 50, polban2.y+40, polban2.x + 80, polban2.y + 30, 5, BLUE);
+    DDA_ThickLine(polban2.x + 80, polban2.y+30, polban2.x + 80, polban2.y + 25, 5, BLUE);
+    
+    Rectangle polban3 = { 650, 80, 100, 50};
+    DrawRectangleRec(polban3, WHITE);
+    DDA_ThickLine(polban3.x + 50, polban3.y+5, polban3.x + 10, polban3.y + 20, 5, ORANGE);
+    DDA_ThickLine(polban3.x + 65, polban3.y+10, polban3.x + 10, polban3.y + 25, 5, ORANGE);
+    DDA_ThickLine(polban3.x + 80, polban3.y+22, polban3.x + 10, polban3.y + 30, 5, ORANGE);
+    DDA_ThickLine(polban3.x + 10, polban3.y+30, polban3.x + 50, polban3.y + 40, 5, BLUE);
+    DDA_ThickLine(polban3.x + 50, polban3.y+40, polban3.x + 80, polban3.y + 30, 5, BLUE);
+    DDA_ThickLine(polban3.x + 80, polban3.y+30, polban3.x + 80, polban3.y + 25, 5, BLUE);
+    
     DrawBackButton();
     DrawReplayButton();
 }
